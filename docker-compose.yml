@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: splitemoney-db
+    restart: always
+    environment:
+      MYSQL_DATABASE: splitemoney
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+      MYSQL_ROOT_PASSWORD: admin
+    ports:
+      - "3306:3306"
+    volumes:
+      - my_data:/var/lib/mysql
+    networks:
+      - my-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "admin", "-padmin"]
+      interval: 10s
+      retries: 5
+      timeout: 5s
+      start_period: 30s
+
+  splitmoney-app:
+    build:
+      context: .
+    container_name: splitmoney-app
+    restart: always
+    ports:
+      - "8000:8000"
+    networks:
+      - my-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+networks:
+  my-network:
+
+volumes:
+  my_data:
+
